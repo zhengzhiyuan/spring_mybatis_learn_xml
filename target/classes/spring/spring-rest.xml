@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+	<bean id="pollingConnectionManager"	 class="org.apache.http.impl.conn.PoolingHttpClientConnectionManager">
+		<property name="maxTotal" value="${rest.maxTotal}" />
+		<property name="defaultMaxPerRoute" value="${rest.defaultMaxPerRoute}" />
+	</bean>
+
+	<bean id="httpClientBuilder" class="org.apache.http.impl.client.HttpClientBuilder"	factory-method="create">
+		<property name="connectionManager" ref="pollingConnectionManager" />
+	</bean>
+
+	<bean id="httpClient" factory-bean="httpClientBuilder" factory-method="build" />
+
+	<bean id="clientHttpRequestFactory" class="org.springframework.http.client.HttpComponentsClientHttpRequestFactory">
+		<constructor-arg ref="httpClient" />
+		<property name="connectTimeout" value="${rest.connectTimeout}" />
+		<property name="readTimeout" value="${rest.readTimeout}" />
+	</bean>
+	
+  <bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+        <constructor-arg ref="clientHttpRequestFactory"/>
+        <property name="errorHandler">
+            <bean class="org.springframework.web.client.DefaultResponseErrorHandler"/>
+        </property>
+        <property name="messageConverters">
+            <list>
+                <bean class="org.springframework.http.converter.FormHttpMessageConverter"/>
+                <bean class="org.springframework.http.converter.StringHttpMessageConverter"/>
+                <!-- <bean class="org.springframework.http.converter.json.GsonHttpMessageConverter"/> -->
+            </list>
+        </property> 
+    </bean>
+	
+</beans>
